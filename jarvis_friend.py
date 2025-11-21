@@ -1,4 +1,37 @@
+import os
+import sys
+import subprocess
+
+def ensure_package(package, import_name=None):
+    """Install a package if missing."""
+    try:
+        __import__(import_name or package)
+    except ImportError:
+        print(f"[Setup] Installing {package}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# Essential packages for Jarvis
+required_packages = [
+    ("pyttsx3", None),
+    ("SpeechRecognition", "speech_recognition"),
+    ("pygame", None),
+    ("keyboard", None),
+    ("requests", None),
+    ("pywhatkit", None),
+    ("openai", None),
+    ("psutil", None),
+    ("pyautogui", None),
+    ("pyjokes", None)
+]
+
+for pkg, imp in required_packages:
+    ensure_package(pkg, imp)
+
+import pygame
 import pyttsx3
+import psutil
+import pyautogui
+import pyjokes
 import datetime
 import speech_recognition as sr
 import os
@@ -6,6 +39,8 @@ import pywhatkit
 import pygame
 import math
 import random
+import keyboard
+import time
 import sys
 import time as t
 import threading
@@ -13,7 +48,7 @@ import requests
 from openai import OpenAI
 import webbrowser
 
-client = OpenAI(api_key="YOUR_OPENAI_API_KEY")  # replace with your key
+client = OpenAI(api_key="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")  # replace with your key
 
 name = input("Enter your name: ")
 
@@ -95,12 +130,82 @@ def show_options():
         "11. Show memory",
         "12. game",
         "13. Forget something",
-        "14. Exit"
+        "14. play music",
+        "15. send message",
+        "16. weather",
+        "17. System Control (shutdown, restart, volume, camera)",
+        "18. meaning",
+        "19. tell a joke",
+        "20. battery status",
+        "21. take screenshort",
+        "23. open apps(open)",
+        "22. Exit"
     ]
     say("Here are the commands you can use:")
     for option in options:
         print(option)
         say(option)
+
+def open_app(app_name):
+    apps = {
+        "notepad": "notepad.exe",
+        "calculator": "calc.exe",
+        "paint": "mspaint.exe"
+    }
+    if app_name.lower() in apps:
+        os.system(f"start {apps[app_name.lower()]}")
+        say(f"Opening {app_name}")
+    else:
+        say("I don't know this app.")
+
+
+def run_music_player():
+    pygame.mixer.init()
+
+    # Playlist - add your own songs here
+    playlist = ["hara.mp3", "rider.mp3", "tere.mp3"]
+    volume = 0.5
+    pygame.mixer.music.set_volume(volume)
+    current_song = 0
+
+    def play_song(index):
+        pygame.mixer.music.load(playlist[index])
+        pygame.mixer.music.play()
+        say(f"Now playing: {playlist[index]}")
+
+    play_song(current_song)
+
+    while True:
+        if keyboard.is_pressed("up"):
+            volume = min(1.0, volume + 0.05)
+            pygame.mixer.music.set_volume(volume)
+            say(f"Volume: {int(volume * 100)}%")
+            time.sleep(0.2)
+
+        elif keyboard.is_pressed("down"):
+            volume = max(0.0, volume - 0.05)
+            pygame.mixer.music.set_volume(volume)
+            say(f"Volume: {int(volume * 100)}%")
+            time.sleep(0.2)
+
+        elif keyboard.is_pressed("n"):  # Next song
+            current_song = (current_song + 1) % len(playlist)
+            play_song(current_song)
+            time.sleep(0.5)
+
+        elif keyboard.is_pressed("p"):  # Previous song
+            current_song = (current_song - 1) % len(playlist)
+            play_song(current_song)
+            time.sleep(0.5)
+
+        elif keyboard.is_pressed("s"):  # Stop
+            say("Stopping music...")
+            pygame.mixer.music.stop()
+            break
+
+        if not pygame.mixer.music.get_busy():
+            current_song = (current_song + 1) % len(playlist)
+            play_song(current_song)
 
 def google_search(query):
     say(f"Searching Google for {query}")
@@ -262,6 +367,87 @@ def run_ai_enemy_game():
 # --- Integrate into Jarvis ---
 # Add to the main command loop
 
+def random_fact():
+    facts = [
+        "Honey never spoils.",
+        "Bananas are berries but strawberries are not.",
+        "Octopuses have three hearts."
+    ]
+    say(random.choice(facts))
+
+def get_weather(city="Karachi"):
+    try:
+        api_key = "c6817883270c22407d42319bf52b36b7"  # get from openweathermap.org
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+        data = requests.get(url).json()
+        if data["cod"] == 200:
+            temp = data["main"]["temp"]
+            desc = data["weather"][0]["description"]
+            say(f"The temperature in {city} is {temp} degrees Celsius with {desc}.")
+        else:
+            say("Sorry, I couldn't find that city.")
+    except Exception as e:
+        say(f"Error fetching weather: {e}")
+
+def system_control(action):
+    if "shutdown" in action:
+        say("Shutting down the system.")
+        os.system("shutdown /s /t 5")
+    elif "restart" in action:
+        say("Restarting the system.")
+        os.system("shutdown /r /t 5")
+    elif "volume up" in action:
+        keyboard.press_and_release("volume up")
+        say("Volume increased.")
+    elif "volume down" in action:
+        keyboard.press_and_release("volume down")
+        say("Volume decreased.")
+    elif "camera" in action:
+        say("Opening camera.")
+        os.system("start microsoft.windows.camera:")
+
+def get_meaning(word):
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+    try:
+        res = requests.get(url).json()
+        meaning = res[0]["meanings"][0]["definitions"][0]["definition"]
+        say(f"The meaning of {word} is: {meaning}")
+    except:
+        say("Sorry, I couldn't find that word.")
+
+def tell_joke():
+    joke = pyjokes.get_joke()
+    say(joke)
+
+def battery_status():
+    battery = psutil.sensors_battery()
+    if battery:
+        percent = battery.percent
+        plugged = "plugged in" if battery.power_plugged else "not plugged in"
+        say(f"Battery is at {percent} percent and it is {plugged}.")
+    else:
+        say("Battery status not available.")
+
+def take_screenshot():
+    say("Taking a screenshot.")
+    file_name = f"screenshot_{int(time.time())}.png"
+    pyautogui.screenshot(file_name)
+    say(f"Screenshot saved as {file_name}.")
+
+def open_website(name):
+    websites = {
+        "youtube": "https://youtube.com",
+        "facebook": "https://facebook.com",
+        "instagram": "https://instagram.com",
+        "twitter": "https://twitter.com",
+        "github": "https://github.com",
+        "google": "https://google.com"
+    }
+    if name in websites:
+        say(f"Opening {name}")
+        webbrowser.open(websites[name])
+    else:
+        say("Website not found in my list.")
 
 def ask_chatgpt(question):
     try:
@@ -312,6 +498,58 @@ while True:
         question = input("You: ")
         answer = ask_chatgpt(question)
         say(answer)
+
+    elif "open" in command:
+        say("Which application?")
+        app = input("You: ")
+        open_app(app)
+
+    elif "fact" in command:
+        random_fact()
+    
+    elif "weather" in command:
+        say("Which city's weather do you want to know?")
+        city = input("City: ")
+        get_weather(city)
+
+    elif "shutdown" in command or "restart" in command or "volume" in command or "camera" in command:
+        system_control(command)
+
+    elif "meaning" in command:
+        say("Which word should I define?")
+        word = input("Word: ")
+        get_meaning(word)
+
+    elif "joke" in command:
+        tell_joke()
+
+    elif "battery" in command:
+        battery_status()
+
+    elif "screenshot" in command:
+        take_screenshot()
+
+    elif "website" in command:
+        say("Which website do you want to open?")
+        name = input("Website name: ").lower()
+        open_website(name)
+
+    elif "send whatsapp message" in command or "send message" in command:
+        say("Please enter the phone number with country code, for example +923211234567")
+        phone = input("Phone number: ")
+        say("What message should I send?")
+        message = input("Message: ")
+
+        say(f"Sending your message to {phone}")
+        try:
+            pywhatkit.sendwhatmsg_instantly(phone, message, wait_time=10, tab_close=True)
+            say("Message sent successfully.")
+        except Exception as e:
+            say(f"Sorry, I couldn't send the message. Error: {e}")
+
+    elif "play music" in command or "music" in command:
+        say("Launching music player...")
+        threading.Thread(target=run_music_player, daemon=True).start()
 
     elif "set alarm" in command:
         say("At what time? (HH:MM 24h format)")
