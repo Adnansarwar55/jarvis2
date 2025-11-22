@@ -138,8 +138,9 @@ def show_options():
         "19. tell a joke",
         "20. battery status",
         "21. take screenshort",
-        "23. open apps(open)",
-        "22. Exit"
+        "22. open apps(open)",
+        "23. Recipe",
+        "24. Exit"
     ]
     say("Here are the commands you can use:")
     for option in options:
@@ -163,7 +164,7 @@ def run_music_player():
     pygame.mixer.init()
 
     # Playlist - add your own songs here
-    playlist = ["hara.mp3", "rider.mp3", "tere.mp3"]
+    playlist = ["hara.mp3", "rider.mp3", "tere.mp3", "fitor.mp3"]
     volume = 0.5
     pygame.mixer.music.set_volume(volume)
     current_song = 0
@@ -211,6 +212,102 @@ def google_search(query):
     say(f"Searching Google for {query}")
     url = f"https://www.google.com/search?q={query.replace(' ', '+')}"
     webbrowser.open(url)
+
+def Recipe():
+    materal = input("Enter your materal: ")
+    if materal == "enzyme desizing":
+        print("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              Enzyme desizer = 3% O.w.f
+              Temperature = 70c
+              Time = 1 hour""")
+        say("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              Enzyme desizer = 3% O.w.f
+              Temperature = 70c
+              Time = 1 hour""")
+    elif materal == "scouring":
+        print("""Recip:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 0.1g//L
+              NaOH = 1.5% O.w.f
+              soda Ash = 0.5% O.w.f
+              Temp = 98-100c
+              Time = 1hour""")
+        say("""Recip:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 0.1g//L
+              NaOH = 1.5% O.w.f
+              soda Ash = 0.5% O.w.f
+              Temp = 98-100c
+              Time = 1hour""")
+    elif materal == "Bleaching":
+        print("Bleaching with H2O2")
+        print("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 0.5g//L
+              stablizer = 1.5%
+              NaOH = 2%
+              H2O2 = 8%
+              temp 98-100c
+              Time = 1hour""")
+        say("H2O2 Bleach Recipe.")
+        say("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 0.5g//L
+              stablizer = 1.5%
+              NaOH = 2%
+              H2O2 = 8%
+              temp 98-100c
+              Time = 1hour""")
+    elif materal == "Direct dye":
+        print("""Recip:-
+              L:R = 1:30
+              soda Ash = 1g//L
+              wetting agent = 1g//L
+              sequesting agent = 1g//L
+              anticreasing agent = 1g//L
+              Direct dye = x%
+              comman salt = 15g//L
+              Temp = 90c
+              Time = 1hour""")
+        say("""Recip:-
+              L:R = 1:30
+              soda Ash = 1g//L
+              wetting agent = 1g//L
+              sequesting agent = 1g//L
+              anticreasing agent = 1g//L
+              Direct dye = x%
+              comman salt = 15g//L
+              Temp = 90c
+              Time = 1hour""")
+    elif materal == "Reactive dye":
+        print("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 2g//L
+              anticreasing agent = 2g//L
+              Reactive dye = x%
+              soda Ash = 20g//L
+              comman salt = 60g//L
+              Temp = 90c
+              Time = 1hour""")
+        say("""Recipe:-
+              L:R = 1:30
+              wetting agent = 2g//L
+              sequesting agent = 2g//L
+              anticreasing agent = 2g//L
+              Reactive dye = x%
+              soda Ash = 20g//L
+              comman salt = 60g//L
+              Temp = 90c
+              Time = 1hour""")
 
 def get_news():
     api_key = "d9bb891b9c4045999ef47c0d5afad0ff"
@@ -550,6 +647,9 @@ while True:
     elif "play music" in command or "music" in command:
         say("Launching music player...")
         threading.Thread(target=run_music_player, daemon=True).start()
+    
+    elif "Recipe" in command:
+        say("Enter your Recipes.")
 
     elif "set alarm" in command:
         say("At what time? (HH:MM 24h format)")
